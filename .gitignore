@@ -1,0 +1,9 @@
+.vscode/
+.vs/
+.MO1/
+.x64/
+MO1.sln
+MO1.vcxproj
+MO1.vcxproj.filters
+MO1.vcxproj.user
+MakeFile
