@@ -17,9 +17,6 @@ csopesy-scheduler/
 │   ├── Scheduler.cpp
 │   ├── CommandHandler.cpp
 │   └── main.cpp
-├── build/               # Compiled objects (generated)
-├── bin/                 # Executable (generated)
-├── Makefile
 ├── config.txt
 └── README.md
 ```
@@ -113,5 +110,6 @@ delay-per-exec 100
 - Joaquin Cardino
 
 ## Version
+
 
 1.00.00 - Compact Edition
