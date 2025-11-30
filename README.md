@@ -1,6 +1,5 @@
 # CSOPESY CPU Scheduler Simulator - Compact Version
 
-A modular CPU scheduler simulator with **only 9 files** (4 header + 4 implementation + main).
 
 ## Project Structure
 
@@ -113,3 +112,4 @@ delay-per-exec 100
 
 
 1.00.00 - Compact Edition
+
