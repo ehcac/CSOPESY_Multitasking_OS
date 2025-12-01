@@ -1,4 +1,4 @@
-# CSOPESY CPU Scheduler Simulator
+# CSOPESY CPU Multitasking OS
 
 
 ## Project Structure
