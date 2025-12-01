@@ -1,4 +1,4 @@
-# CSOPESY CPU Scheduler Simulator - Compact Version
+# CSOPESY CPU Scheduler Simulator
 
 
 ## Project Structure
