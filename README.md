@@ -84,23 +84,6 @@ delay-per-exec 100
 - `report-util` - Generate report
 - `exit` - Exit
 
-## Key Features
-
-✅ **Compact Design**: Only 9 files total
-✅ **Still Modular**: Clear logical separation
-✅ **Thread-Safe**: Proper synchronization
-✅ **Maintainable**: Related code grouped together
-✅ **Easy to Build**: Simple Makefile
-
-## What Changed from Full Version
-
-**Combined:**
-- Utils merged into Config
-- Instruction, PCB, ProcessGenerator, InstructionExecutor, ProcessManager → Process
-- Scheduler + ScreenManager → Scheduler
-
-**Result:** 18 files → 9 files (50% reduction!)
-
 ## Authors
 
 - Matthew Copon
