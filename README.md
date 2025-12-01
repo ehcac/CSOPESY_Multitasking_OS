@@ -44,34 +44,6 @@ csopesy-scheduler/
 ### main.cpp
 - Entry point and main loop
 
-## Building
-
-```bash
-# Compile
-make
-
-# Debug build
-make debug
-
-# Clean
-make clean
-
-# Build and run
-make run
-```
-
-## Configuration (config.txt)
-
-```
-num-cpu 4
-scheduler "rr"
-quantum-cycles 5
-batch-processes-freq 3
-min-ins 100
-max-ins 200
-delay-per-exec 100
-```
-
 ## Commands
 
 - `initialize` - Load configuration
