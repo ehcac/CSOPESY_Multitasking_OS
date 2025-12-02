@@ -357,13 +357,9 @@ void ScreenManager::screenLS() {
         else running++;
     }
 
-    std::cout << "\nCPU Utilization: " << (cores_used * 100 / num_cpu) << "%\n";
-    std::cout << "Cores used: " << cores_used << "\n";
-    std::cout << "Cores available: " << (num_cpu - cores_used) << "\n";
     std::cout << "\nRunning processes: " << running << "\n";
     std::cout << "Finished processes: " << finished << "\n";
     std::cout << "+---------------+--------------------------+----------+-----------------------------------+" << std::endl;
-
     for (PCB* p : process_list_copy) {
         std::lock_guard<std::mutex> pcb_lock(p->pcb_mutex);
 
@@ -398,6 +394,10 @@ void ScreenManager::screenLS() {
         std::cout << "] " << std::right << std::setw(3) << p->pc << " / "
             << p->total_instructions << " |\n";
     }
+    std::cout << "+---------------+--------------------------+----------+-----------------------------------+" << std::endl;
+    std::cout << "\nCPU Utilization: " << (cores_used * 100 / num_cpu) << "%\n";
+    std::cout << "Cores used: " << cores_used << "\n";
+    std::cout << "Cores available: " << (num_cpu - cores_used) << "\n";
     std::cout << "+---------------+--------------------------+----------+-----------------------------------+" << std::endl;
 }
 
