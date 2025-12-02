@@ -53,7 +53,7 @@ struct PCB {
 class ProcessGenerator {
 public:
     ProcessGenerator();
-    Instruction makeRandomInstruction(int depth = 0);
+    Instruction makeRandomInstruction(int depth = 0, int memory_size = 0);
     PCB* createRandomProcess(int pid, int memory_size = 0);
     PCB* createNamedProcess(const std::string& name, int pid, int memory_size = 0);
     PCB* createCustomProcess(const std::string& name, int pid, int memory_size, const std::string& instructions_str);
