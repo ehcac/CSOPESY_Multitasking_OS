@@ -241,52 +241,38 @@ void CommandHandler::processCommand(const std::string& command_line, int& next_p
             std::cout << "ERROR: Memory Manager not initialized.\n";
         }
         else {
-            MemoryStats stats = mm.getStats();
-            Config& config = Config::getInstance();
-            Scheduler& scheduler = Scheduler::getInstance();
-
-            // Calculate values based on MO2-SPECS definition 
-            long long total_mem = config.getMaxOverAll();
-            long long used_mem = (long long)stats.used_frames * config.getMemPerFrame();
-            long long free_mem = (long long)stats.free_frames * config.getMemPerFrame();
-
-            // In this simulation, Used Memory is effectively Active Memory
-            long long active_mem = used_mem;
-            long long inactive_mem = 0; // Not simulated, but listed in standard vmstat
-
-            // CPU Ticks
-            unsigned long long active_ticks = scheduler.getActiveTicks();
-            unsigned long long idle_ticks = scheduler.getIdleTicks();
-            unsigned long long system_ticks = 0; // Simplified: User ticks = Active ticks
-
-            std::cout << "\n";
-            std::cout << std::setw(12) << total_mem << " bytes total memory\n";
-            std::cout << std::setw(12) << used_mem << " bytes used memory\n";
-            std::cout << std::setw(12) << active_mem << " bytes active memory\n";
-            std::cout << std::setw(12) << inactive_mem << " bytes inactive memory\n";
-            std::cout << std::setw(12) << free_mem << " bytes free memory\n";
-            std::cout << std::setw(12) << 0 << " bytes buffer memory\n";
-            std::cout << std::setw(12) << 0 << " bytes swap cache\n";
-            std::cout << std::setw(12) << total_mem << " bytes total swap\n";
-            std::cout << std::setw(12) << 0 << " bytes used swap\n";
-            std::cout << std::setw(12) << total_mem << " bytes free swap\n";
-            std::cout << std::setw(12) << active_ticks << " non-nice user cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " nice user cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " system cpu ticks\n";
-            std::cout << std::setw(12) << idle_ticks << " idle cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " IO-wait cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " IRQ cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " softirq cpu ticks\n";
-            std::cout << std::setw(12) << 0 << " stolen cpu ticks\n";
-            std::cout << std::setw(12) << stats.total_pages_in << " pages paged in\n";
-            std::cout << std::setw(12) << stats.total_pages_out << " pages paged out\n";
-            std::cout << std::setw(12) << 0 << " pages swapped in\n";
-            std::cout << std::setw(12) << 0 << " pages swapped out\n";
-            std::cout << std::setw(12) << 0 << " interrupts\n";
-            std::cout << std::setw(12) << 0 << " CPU context switches\n";
-            std::cout << std::setw(12) << Utils::getTimestamp() << " boot time\n";
-            std::cout << std::setw(12) << (next_pid - 1) << " forks\n";
-            std::cout << "\n";
+             MemoryStats stats = mm.getStats();
+             Config& config = Config::getInstance();
+             Scheduler& scheduler = Scheduler::getInstance();
+            
+             long long total_mem = config.getMaxOverAll();
+             long long used_mem = (long long)stats.used_frames * config.getMemPerFrame();
+             long long free_mem = (long long)stats.free_frames * config.getMemPerFrame();
+            
+             // In this simulation, Used Memory is effectively Active Memory
+             long long active_mem = used_mem;
+             long long inactive_mem = 0; // Not simulated, but listed in standard vmstat
+            
+             // CPU Ticks
+             unsigned long long active_ticks = scheduler.getActiveTicks();
+             unsigned long long idle_ticks = scheduler.getIdleTicks();
+             unsigned long long system_ticks = 0; 
+            
+             std::cout << "\n";
+             std::cout << std::setw(12) << total_mem << " bytes total memory\n";
+             std::cout << std::setw(12) << used_mem << " bytes used memory\n";
+             std::cout << std::setw(12) << active_mem << " bytes active memory\n";
+             std::cout << std::setw(12) << inactive_mem << " bytes inactive memory\n";
+             std::cout << std::setw(12) << free_mem << " bytes free memory\n";
+             std::cout << std::setw(12) << total_mem << " bytes total swap\n";
+             std::cout << std::setw(12) << total_mem << " bytes free swap\n";
+             std::cout << std::setw(12) << active_ticks << " non-nice user cpu ticks\n";
+             std::cout << std::setw(12) << idle_ticks << " idle cpu ticks\n";
+             std::cout << std::setw(12) << stats.total_pages_in << " pages paged in\n";
+             std::cout << std::setw(12) << stats.total_pages_out << " pages paged out\n";
+             std::cout << std::setw(12) << Utils::getTimestamp() << " boot time\n";
+             std::cout << std::setw(12) << (next_pid - 1) << " forks\n";
+             std::cout << "\n";
         }
     }
     else if (cmd == "process-smi") {
