@@ -133,10 +133,17 @@ void CommandHandler::processCommand(const std::string& command_line, int& next_p
             else if (subcmd == "-ls") {
                 screen.screenLS();
             }
+            else if (subcmd == "-c") {
+                 std::cout << "Screen -c Ran ! :D\n";
+                // screen -c <process_name> <process_memory_size> <instructions>
+            }
             else {
-                std::cout << "Usage: screen -s <n> | screen -r <n> | screen -ls\n";
+                std::cout << "Usage: screen -s <process_name> <memory_size> | screen -r <process_name> | screen -ls | screen -c <process_name> <process_memory_size> <instructions>\n";
             }
         }
+    }
+    else if (cmd == "vmstat") {
+        std::cout << "Stat Page :D\n";
     }
     // UPDATE: command can now be accessed in main menu
     else if (cmd == "process-smi") {
