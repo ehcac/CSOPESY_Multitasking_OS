@@ -44,6 +44,14 @@ csopesy-scheduler/
 ### main.cpp
 - Entry point and main loop
 
+## How to Run
+```
+git clone https://github.com/ehcac/CSOPESY_Multitasking_OS/
+cd CSOPESY_Multitasking_OS
+g++ src/*.cpp -o execute 
+./execute # or execute.exe for windows
+```
+
 ## Commands
 
 - `initialize` - Load configuration
@@ -59,11 +67,6 @@ csopesy-scheduler/
 - 
 - `exit` - Exit
 
-## How to Run
-git clone https://github.com/ehcac/CSOPESY_Multitasking_OS/
-cd CSOPESY_Multitasking_OS
-g++ src/*.cpp -o execute
-./execute
 
 ## Authors
 
