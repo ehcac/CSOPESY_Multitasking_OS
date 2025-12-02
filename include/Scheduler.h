@@ -22,6 +22,10 @@ public:
     std::vector<bool> getCPUBusy();
     std::mutex& getReadyQueueMutex() { return ready_queue_mutex; }
 
+    unsigned long long getActiveTicks() const { return active_ticks; }
+    unsigned long long getIdleTicks() const { return idle_ticks; }
+    unsigned long long getTotalTicks() const { return active_ticks + idle_ticks; }
+
 private:
     Scheduler() = default;
     Scheduler(const Scheduler&) = delete;
@@ -43,6 +47,8 @@ private:
     
     ProcessGenerator process_generator;
     int next_pid = 1;
+    std::atomic<unsigned long long> active_ticks{ 0 };
+    std::atomic<unsigned long long> idle_ticks{ 0 };
 };
 
 // Screen Mode
