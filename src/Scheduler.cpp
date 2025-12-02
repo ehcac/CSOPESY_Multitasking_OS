@@ -104,6 +104,17 @@ void Scheduler::cpuWorker(int id) {
             }
         }
 
+        // [NEW] Tick counting logic
+        // If we have a process, it's an active tick. If not, it's an idle tick.
+        if (current_process != nullptr) {
+            active_ticks++;
+        }
+        else {
+            // Check if queue is empty to truly confirm idle
+            // (Strictly speaking, if current_process is null here, the core is idle)
+            idle_ticks++;
+        }
+
         if (current_process) {
             bool process_finished_this_run = false;
             bool process_preempted_this_run = false;
@@ -118,6 +129,7 @@ void Scheduler::cpuWorker(int id) {
                 current_process->cpu_core = id;
 
                 if (current_process->sleep_ticks > 0) {
+                    // ... (sleep logic remains same) ...
                     current_process->sleep_ticks--;
                     if (current_process->sleep_ticks == 0) {
                         current_process->pc++;
@@ -129,6 +141,15 @@ void Scheduler::cpuWorker(int id) {
                     process_preempted_this_run = true;
                 }
                 else {
+                    if (mm.isInitialized() && current_process->memory_size > 0) {
+                        uint16_t dummy_val = 0;
+                        int fetch_address = current_process->pc % current_process->memory_size;
+
+                        // This read will trigger a Page Fault if the page isn't in RAM
+                        mm.readMemory(current_process->pid, fetch_address, dummy_val);
+                    }
+
+                    // Execute actual logic
                     InstructionExecutor::execute(*current_process,
                         current_process->instructions[current_process->pc]);
                     current_run_cycles++;
@@ -146,13 +167,14 @@ void Scheduler::cpuWorker(int id) {
                 {
                     std::lock_guard<std::mutex> lock(cpu_stats_mutex);
                     cpu_process_count[id]++;
+                    cpu_busy[id] = false;
                 }
-                
+
                 // Deallocate memory when process finishes
                 if (mm.isInitialized() && current_process->memory_size > 0) {
                     mm.deallocateMemory(current_process->pid);
                 }
-                
+
                 current_process = nullptr;
             }
             else if (process_preempted_this_run) {
@@ -175,17 +197,17 @@ void Scheduler::processGeneratorWorker() {
 
     while (scheduler_running) {
         int memory_size = 0;
-        
+
         // Only assign memory if memory manager is initialized
         if (mm.isInitialized()) {
             int min_mem = config.getMinMemPerProc();
             int max_mem = config.getMaxMemPerProc();
-            
+
             if (min_mem > 0 && max_mem > 0) {
                 // Generate random power of 2 between min and max
                 int min_power = std::log2(min_mem);
                 int max_power = std::log2(max_mem);
-                
+
                 if (min_power <= max_power) {
                     std::random_device rd;
                     std::mt19937 gen(rd());
@@ -194,9 +216,9 @@ void Scheduler::processGeneratorWorker() {
                 }
             }
         }
-        
+
         PCB* p = process_generator.createRandomProcess(next_pid++, memory_size);
-        
+
         // Allocate memory if needed
         if (memory_size > 0 && mm.isInitialized()) {
             if (!mm.allocateMemory(p->pid, memory_size)) {
@@ -206,7 +228,7 @@ void Scheduler::processGeneratorWorker() {
                 continue;
             }
         }
-        
+
         pm.addProcess(p);
         enqueueProcess(p);
 
@@ -234,7 +256,7 @@ void ScreenManager::displayProcessScreen(const std::string& process_name) {
 
     std::cout << "Process: " << p->name << "\n";
     std::cout << "ID: " << p->pid << "\n";
-    
+
     if (p->memory_size > 0) {
         std::cout << "Memory Size: " << p->memory_size << " bytes\n";
     }
@@ -260,11 +282,61 @@ void ScreenManager::displayProcessScreen(const std::string& process_name) {
 }
 
 void ScreenManager::processSMI() {
-    if (current_process_name.empty()) {
-        std::cout << "Not in a process screen.\n";
-        return;
+    // We no longer check for current_process_name. 
+    // This command now runs globally in the Main Menu.
+
+    Config& config = Config::getInstance();
+    MemoryManager& mm = MemoryManager::getInstance();
+    Scheduler& scheduler = Scheduler::getInstance();
+    ProcessManager& pm = ProcessManager::getInstance();
+
+    // 1. Get System Stats
+    MemoryStats memStats = mm.getStats();
+    int cores_used = scheduler.getCoresUsed();
+    int total_cpu = config.getNumCPU();
+
+    // Calculate Percentages
+    double cpu_util = (total_cpu > 0) ? ((double)cores_used / total_cpu * 100.0) : 0.0;
+
+    long long total_mem = config.getMaxOverAll();
+    long long used_mem = (long long)memStats.used_frames * config.getMemPerFrame();
+    double mem_util = (total_mem > 0) ? ((double)used_mem / total_mem * 100.0) : 0.0;
+
+    // 2. Render Layout (Matches MO2 Spec Page 4 Mockup)
+    std::cout << "\n";
+    std::cout << "--------------------------------------------------\n";
+    std::cout << "| PROCESS-SMI V01.00 Driver Version: 01.00       |\n";
+    std::cout << "--------------------------------------------------\n";
+
+    std::cout << "CPU-Util: " << std::fixed << std::setprecision(0) << cpu_util << "%\n";
+    std::cout << "Memory Usage: " << used_mem << " bytes / " << total_mem << " bytes\n";
+    std::cout << "Memory Util: " << mem_util << "%\n";
+
+    std::cout << "\n==================================================\n";
+    std::cout << "Running processes and memory usage:\n";
+    std::cout << "--------------------------------------------------\n";
+
+    // 3. List Running Processes
+    // We iterate through all processes and print only the ones that are NOT finished
+    auto all_processes = pm.getAllProcesses();
+    bool any_running = false;
+
+    for (const auto& pair : all_processes) {
+        PCB* p = pair.second;
+        if (!p->finished) {
+            // Print Process Name and Memory Size
+            std::cout << std::left << std::setw(20) << p->name
+                << p->memory_size << " bytes\n";
+            any_running = true;
+        }
     }
-    displayProcessScreen(current_process_name);
+
+    if (!any_running) {
+        std::cout << "No running processes.\n";
+    }
+
+    std::cout << "--------------------------------------------------\n";
+    std::cout << "\n";
 }
 
 void ScreenManager::screenLS() {
