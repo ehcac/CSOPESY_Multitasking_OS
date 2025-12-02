@@ -51,10 +51,19 @@ csopesy-scheduler/
 - `scheduler-stop` - Stop scheduler
 - `screen -s <name>` - Create process
 - `screen -r <name>` - View process
+- `screen -c <name> <process_memory_size> \"<instructions>\";`- Create Process
 - `screen -ls` - List all processes
 - `process-smi` - Show process info
+- `vmstat` - Show memory statistical info
 - `report-util` - Generate report
+- 
 - `exit` - Exit
+
+## How to Run
+git clone https://github.com/ehcac/CSOPESY_Multitasking_OS/
+cd CSOPESY_Multitasking_OS
+g++ src/*.cpp -o execute
+./execute
 
 ## Authors
 
