@@ -1,6 +1,7 @@
 #include <mutex>
 #include "../include/Scheduler.h"
 #include "../include/Config.h"
+#include "../include/MemoryManager.h"
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -89,6 +90,7 @@ std::vector<bool> Scheduler::getCPUBusy() {
 
 void Scheduler::cpuWorker(int id) {
     Config& config = Config::getInstance();
+    MemoryManager& mm = MemoryManager::getInstance();
     PCB* current_process = nullptr;
     int current_run_cycles = 0;
 
@@ -145,6 +147,12 @@ void Scheduler::cpuWorker(int id) {
                     std::lock_guard<std::mutex> lock(cpu_stats_mutex);
                     cpu_process_count[id]++;
                 }
+                
+                // Deallocate memory when process finishes
+                if (mm.isInitialized() && current_process->memory_size > 0) {
+                    mm.deallocateMemory(current_process->pid);
+                }
+                
                 current_process = nullptr;
             }
             else if (process_preempted_this_run) {
@@ -163,9 +171,42 @@ void Scheduler::cpuWorker(int id) {
 void Scheduler::processGeneratorWorker() {
     Config& config = Config::getInstance();
     ProcessManager& pm = ProcessManager::getInstance();
+    MemoryManager& mm = MemoryManager::getInstance();
 
     while (scheduler_running) {
-        PCB* p = process_generator.createRandomProcess(next_pid++);
+        int memory_size = 0;
+        
+        // Only assign memory if memory manager is initialized
+        if (mm.isInitialized()) {
+            int min_mem = config.getMinMemPerProc();
+            int max_mem = config.getMaxMemPerProc();
+            
+            if (min_mem > 0 && max_mem > 0) {
+                // Generate random power of 2 between min and max
+                int min_power = std::log2(min_mem);
+                int max_power = std::log2(max_mem);
+                
+                if (min_power <= max_power) {
+                    std::random_device rd;
+                    std::mt19937 gen(rd());
+                    std::uniform_int_distribution<> dis(min_power, max_power);
+                    memory_size = std::pow(2, dis(gen));
+                }
+            }
+        }
+        
+        PCB* p = process_generator.createRandomProcess(next_pid++, memory_size);
+        
+        // Allocate memory if needed
+        if (memory_size > 0 && mm.isInitialized()) {
+            if (!mm.allocateMemory(p->pid, memory_size)) {
+                // If allocation fails, skip this process
+                delete p;
+                std::this_thread::sleep_for(std::chrono::seconds(config.getBatchProcessFreq()));
+                continue;
+            }
+        }
+        
         pm.addProcess(p);
         enqueueProcess(p);
 
@@ -193,6 +234,10 @@ void ScreenManager::displayProcessScreen(const std::string& process_name) {
 
     std::cout << "Process: " << p->name << "\n";
     std::cout << "ID: " << p->pid << "\n";
+    
+    if (p->memory_size > 0) {
+        std::cout << "Memory Size: " << p->memory_size << " bytes\n";
+    }
 
     if (p->finished) {
         std::cout << "\nFinished!\n\n";

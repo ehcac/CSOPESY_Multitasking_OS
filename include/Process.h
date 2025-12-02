@@ -12,7 +12,7 @@
 
 // Instruction Types
 enum InstructionType {
-    PRINT, DECLARE, ADD, SUBTRACT, SLEEP, FOR_LOOP
+    PRINT, DECLARE, ADD, SUBTRACT, SLEEP, FOR_LOOP, READ, WRITE
 };
 
 struct Instruction {
@@ -25,6 +25,10 @@ struct Instruction {
     uint8_t sleepTicks = 0;
     std::vector<Instruction> nestedInstructions;
     int repeatCount = 0;
+    
+    // For READ/WRITE instructions
+    int memory_address = 0;
+    uint16_t write_value = 0;
 };
 
 // Process Control Block
@@ -41,6 +45,7 @@ struct PCB {
     std::chrono::system_clock::time_point end_time;
     int cpu_core = -1;
     int total_instructions = 0;
+    int memory_size = 0;  // Added for memory management
     std::mutex pcb_mutex;
 };
 
@@ -49,11 +54,13 @@ class ProcessGenerator {
 public:
     ProcessGenerator();
     Instruction makeRandomInstruction(int depth = 0);
-    PCB* createRandomProcess(int pid);
-    PCB* createNamedProcess(const std::string& name, int pid);
-
+    PCB* createRandomProcess(int pid, int memory_size = 0);
+    PCB* createNamedProcess(const std::string& name, int pid, int memory_size = 0);
+    PCB* createCustomProcess(const std::string& name, int pid, int memory_size, const std::string& instructions_str);
+    
 private:
     std::mt19937 rng;
+    Instruction parseInstruction(const std::string& inst_str);
 };
 
 // Instruction Executor
